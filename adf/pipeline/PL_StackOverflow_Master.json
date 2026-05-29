@@ -1,0 +1,162 @@
+{
+    "name": "PL_StackOverflow_Master",
+    "properties": {
+        "description": "End to end pipeline — Bronze to Silver to Gold",
+        "activities": [
+            {
+                "name": "ACT_Bronze_StackOverflow",
+                "type": "DatabricksNotebook",
+                "dependsOn": [
+                    {
+                        "activity": "CopyLocalToADLSSSH",
+                        "dependencyConditions": [
+                            "Succeeded"
+                        ]
+                    }
+                ],
+                "policy": {
+                    "timeout": "0.12:00:00",
+                    "retry": 0,
+                    "retryIntervalInSeconds": 30,
+                    "secureOutput": false,
+                    "secureInput": false
+                },
+                "userProperties": [],
+                "typeProperties": {
+                    "notebookPath": "/Users/rajinigcp@gmail.com/Delta-Unity-Catalog/NB_Bronze_StackOverflow"
+                },
+                "linkedServiceName": {
+                    "referenceName": "LS_Databricks_DeltaUnity",
+                    "type": "LinkedServiceReference"
+                }
+            },
+            {
+                "name": "ACT_Silver_StackOverflow",
+                "type": "DatabricksNotebook",
+                "dependsOn": [
+                    {
+                        "activity": "ACT_Bronze_StackOverflow",
+                        "dependencyConditions": [
+                            "Succeeded"
+                        ]
+                    }
+                ],
+                "policy": {
+                    "timeout": "0.12:00:00",
+                    "retry": 0,
+                    "retryIntervalInSeconds": 30,
+                    "secureOutput": false,
+                    "secureInput": false
+                },
+                "userProperties": [],
+                "typeProperties": {
+                    "notebookPath": "/Users/rajinigcp@gmail.com/Delta-Unity-Catalog/NB_Silver_StackOverflow"
+                },
+                "linkedServiceName": {
+                    "referenceName": "LS_Databricks_DeltaUnity",
+                    "type": "LinkedServiceReference"
+                }
+            },
+            {
+                "name": "ACT_Gold_StackOverflow",
+                "type": "DatabricksNotebook",
+                "dependsOn": [
+                    {
+                        "activity": "ACT_Silver_StackOverflow",
+                        "dependencyConditions": [
+                            "Succeeded"
+                        ]
+                    }
+                ],
+                "policy": {
+                    "timeout": "0.12:00:00",
+                    "retry": 0,
+                    "retryIntervalInSeconds": 30,
+                    "secureOutput": false,
+                    "secureInput": false
+                },
+                "userProperties": [],
+                "typeProperties": {
+                    "notebookPath": "/Users/rajinigcp@gmail.com/Delta-Unity-Catalog/NB_Gold_StackOverflow"
+                },
+                "linkedServiceName": {
+                    "referenceName": "LS_Databricks_DeltaUnity",
+                    "type": "LinkedServiceReference"
+                }
+            },
+            {
+                "name": "CopyLocalToADLSSSH",
+                "type": "Copy",
+                "dependsOn": [],
+                "policy": {
+                    "timeout": "0.12:00:00",
+                    "retry": 0,
+                    "retryIntervalInSeconds": 30,
+                    "secureOutput": false,
+                    "secureInput": false
+                },
+                "userProperties": [],
+                "typeProperties": {
+                    "source": {
+                        "type": "DelimitedTextSource",
+                        "storeSettings": {
+                            "type": "FileServerReadSettings",
+                            "recursive": true,
+                            "wildcardFolderPath": {
+                                "value": "C:\\DE_Practice\\azure-delta-lake-unity-catalog\\data",
+                                "type": "Expression"
+                            },
+                            "wildcardFileName": {
+                                "value": "*.csv",
+                                "type": "Expression"
+                            },
+                            "enablePartitionDiscovery": false
+                        },
+                        "formatSettings": {
+                            "type": "DelimitedTextReadSettings"
+                        }
+                    },
+                    "sink": {
+                        "type": "DelimitedTextSink",
+                        "storeSettings": {
+                            "type": "AzureBlobFSWriteSettings",
+                            "copyBehavior": "MergeFiles"
+                        },
+                        "formatSettings": {
+                            "type": "DelimitedTextWriteSettings",
+                            "quoteAllText": true,
+                            "fileExtension": ".txt"
+                        }
+                    },
+                    "enableStaging": false,
+                    "translator": {
+                        "type": "TabularTranslator",
+                        "typeConversion": true,
+                        "typeConversionSettings": {
+                            "allowDataTruncation": true,
+                            "treatBooleanAsNumber": false
+                        }
+                    }
+                },
+                "inputs": [
+                    {
+                        "referenceName": "DS_Local_ADLS_SSH",
+                        "type": "DatasetReference"
+                    }
+                ],
+                "outputs": [
+                    {
+                        "referenceName": "DS_SOF_Sink_ADLS_CSV",
+                        "type": "DatasetReference"
+                    }
+                ]
+            }
+        ],
+        "folder": {
+            "name": "Stackoverflow"
+        },
+        "annotations": [],
+        "lastPublishTime": "2026-05-29T06:02:46Z"
+    },
+    "type": "Microsoft.DataFactory/factories/pipelines"
+}
